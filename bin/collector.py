@@ -12,12 +12,13 @@ import json
 # 
 # Hier die entsprechende Schnittstelle definieren
 #[ ] Get serial port from config file
-ECOMETER_SERIAL_PORT   = "/dev/ttyUSB0"
+#ECOMETER_SERIAL_PORT   = "/dev/ttyUSB0"
 
 # Ab hier muss nichts mehr geändert werden
 #[ ] Get Workingdirectory, log, data
-ECOMETER_LOG_FILE  = "/opt/loxberry/log/plugins/ecometer2lox/collector.log"
-ECOMETER_DATA_FILE = "/opt/loxberry/data/plugins/ecometer2lox/collector_data.json"
+ECOMETER_LOG_FILE    = "/opt/loxberry/log/plugins/ecometer2lox/collector.log"
+ECOMETER_DATA_FILE   = "/opt/loxberry/data/plugins/ecometer2lox/collector_data.json"
+ECOMETER_CONFIG_FILE = "/opt/loxberry/config/plugins/ecometer2lox/plugin_config.json"
 
 def setup_logger():
     logger = logging.getLogger("EcoMeter")
@@ -32,6 +33,16 @@ def setup_logger():
     return logger
 
 LOGGER = setup_logger()
+
+try:
+    with open(ECOMETER_CONFIG_FILE) as cf:
+        config = json.load(cf)
+        LOGGER.info("Read config file...")
+        ECOMETER_SERIAL_PORT = config['SERIAL_PORT']
+        cf.close()
+except Exception:
+    # writing failed, ignore
+    LOGGER.error("Read config file failed, ignore...")
 
 _ecometer_result = []
 _ecometer_lock = threading.Lock()
@@ -87,19 +98,25 @@ def serial_read_loop():
             result = {
                     "time": f"{hour:02d}:{minute:02d}:{second:02d}", 
                     "temp_f": temperature, 
-                    "temp_c": '{:.2f}'.format((temperature - 40 - 32) / 1.8), 
+                    "temp_c": int((temperature - 40 - 32) / 1.8), 
                     "ullage": ul_lage,
                     "useablelevel": usable_level, 
                     "useablecapacity": capacity, 
-                    "useablepercent": '{:.2f}'.format(usable_level / capacity * 100), 
+                    "useablepercent": int(usable_level / capacity * 100), 
                     "timestamp": int(datetime.datetime.now().timestamp())
                 }
             
-            LOGGER.debug("time: %s, temp_f: %s, temp_c: %s, ullage: %s, useablelevel: %s, useablecapacity: %s, useablepercent: %s, timestamp: %s", f"{hour:02d}:{minute:02d}:{second:02d}", temperature, '{:.2f}'.format((temperature - 40 - 32) / 1.8), ul_lage, usable_level, capacity, '{:.2f}'.format(usable_level / capacity * 100), int(datetime.datetime.now().timestamp()))
+            LOGGER.debug("time: %s, temp_f: %s, temp_c: %s, ullage: %s, useablelevel: %s, useablecapacity: %s, useablepercent: %s, timestamp: %s", f"{hour:02d}:{minute:02d}:{second:02d}", temperature, int((temperature - 40 - 32) / 1.8), ul_lage, usable_level, capacity, int(usable_level / capacity * 100), int(datetime.datetime.now().timestamp()))
             set_ecometer_result(result)
 
 def main():
-    LOGGER.info("Initizalize")
+    try:
+        ECOMETER_SERIAL_PORT
+    except NameError:
+        LOGGER.error("Serial port not valid")
+        quit()
+
+    LOGGER.info("Initizalize (%s)...", ECOMETER_SERIAL_PORT)
     serial_read_loop()
 
 if __name__ == "__main__":

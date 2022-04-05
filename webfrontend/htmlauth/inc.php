@@ -25,15 +25,66 @@ function shutdown()
 $log = LBLog::newLog( [ "name" => "EcoMeter2Lox", "stderr" => 1 ] );
 LOGSTART("Start Logging");
 
+function collector_status()
+{
+	$pid = "false";
+	$pidfile = LBPCONFIGDIR."/collector.pid";
+
+	if (file_exists( "$pidfile" )){
+		$pid = trim(file_get_contents($pidfile));
+	}
+
+	if (file_exists( "/proc/$pid" )){
+		//process with a pid = $pid is running
+		return $pid;
+	}
+}
+
+function collector_start()
+{
+	$pid = "false";
+	$pidfile = LBPCONFIGDIR."/collector.pid";
+	
+	if (file_exists( "$pidfile" )){
+		$pid = trim(file_get_contents($pidfile));
+	}
+	
+	if (file_exists( "/proc/$pid" )){
+		//process with a pid = $pid is running
+		LOGOK("Collector running (PID: $pid)...");
+	} else {
+		LOGINF("Collector down, trying to start collector...");
+		$pid = trim(shell_exec(LBPBINDIR."/collector.py 2>/dev/null >/dev/null & echo $!"));
+		if(!empty($pid)) {
+			file_put_contents($pidfile, $pid);
+			LOGOK("Collector started, new PID: $pid");
+		} else {
+			LOGERR("Could not start collector...");
+		}
+	}
+}
+
+function collector_stop ($pid)
+{
+	if (file_exists( "/proc/$pid" )){
+		//process with a pid = $pid is running
+		LOGINF("Stopping collector (PID: $pid)...");
+		shell_exec("kill -9 $pid");
+
+		if (!file_exists( "/proc/$pid" )){
+			LOGOK("Collector stopped!");
+		} else {
+			LOGERR("ould not stop collector...");
+		}
+	} else {
+		LOGINF("Collector stopped!");
+	}
+}
+
 function read_json_file($filename)
 {
 	// Get Commands from file
-
-	if( !file_exists($filename) ) {
-		//LOGDEB("get_commands: Commandfile missing, aborting");
-		//LOGERR("Commandfile not found, aborting.");
-	} else {
-		//LOGDEB("get_commands: Read commandfile");
+	if( file_exists($filename) ) {
 		$output = json_decode(file_get_contents($filename));
 	}
 	return $output;
@@ -81,9 +132,11 @@ function mqttpublish($data, $mqttsubtopic="")
 						}
 						$countsubtopics = explode("/", $mqttsubtopic);
 						if ($countsubtopics < 3) {
+							if($key == "timestamp") { $value = epoch2lox(substr($value, 0, 10)); } //epochetime maxlength
 							$mqtt->publish(MQTTTOPIC."/summary$mqttsubtopic/$key", $value, 0, 1);
 							LOGDEB("mqttpublish: ".MQTTTOPIC."/summary$mqttsubtopic/$key: $value");
 						} else {
+							if($key == "timestamp") { $value = epoch2lox(substr($value, 0, 10)); } //epochetime maxlength
 							$mqtt->publish(MQTTTOPIC."$mqttsubtopic/$key", $value, 0, 1);
 							LOGDEB("mqttpublish: ".MQTTTOPIC."$mqttsubtopic/$key: $value");
 						}

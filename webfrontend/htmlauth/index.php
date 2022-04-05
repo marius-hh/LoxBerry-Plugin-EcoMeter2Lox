@@ -28,32 +28,46 @@ LBWeb::lbheader($template_title, $helplink, $helptemplate);
 <div class="wide">Status</div>
 
 <?php
-//var_dump($_POST);
-if(isset($_POST['config_change'])){
+// Check if collector is running
+$pid = collector_status();
+
+if(isset($_GET['stop_collector']))
+{
+    collector_stop($pid);
+    echo "<script> location.href='index.php'; </script>";
+} elseif (isset($_GET['start_collector']))
+{
+    collector_start();
+    echo "<script> location.href='index.php'; </script>";
+}
+
+if(isset($_POST['config_change']))
+{
     $config['SERIAL_PORT'] = $_POST['SERIAL_PORT'];
+    $config['MQTT_TRANSFER'] = $_POST['MQTT_TRANSFER'];
     // Write data to disk
     file_put_contents(ECOMETER_CONFIG_FILE, json_encode($config)); 
+
+    //$pid = collector_status();
+
+    if(!empty($pid)){
+        //restart collector
+        collector_stop($pid);
+
+        while (!empty($pid)){
+            $pid = collector_status();
+            sleep (1);
+        }
+        collector_start();
+        echo "<script> location.href='index.php'; </script>";
+    }
 }
 
-//Check if pid
-$running = false;
-$pid = "false";
-$pidfile = "$lbpconfigdir/collector.pid";
-
-if (file_exists( "$pidfile" )){
-    $pid = trim(file_get_contents($pidfile));
-}
-
-if (file_exists( "/proc/$pid" )){
-    //process with a pid = $pid is running
-    $running = true;
-}
-
-if($running == "true") {
+if(!empty($pid)) {
 ?>
 
 <p style="color:green">
-    <b>The Collector is running (PID: <?=$pid?>). (<a href="?stop_collector">stop collector</a>).</b>
+    <b>The collector is running (PID: <?=$pid?>). (<a href="?stop_collector">stop collector</a>).</b>
 </p><br>
 
 
@@ -61,7 +75,7 @@ if($running == "true") {
 } else {
 ?>
     <p style="color:red">
-    <b>The Collector is not running (PID:<?=$pid?>). (<a href="?start_collector">start collector</a>).</b>
+    <b>The collector is stopped. (<a href="?start_collector">start collector</a>).</b>
 </p><br>
 
 
@@ -69,7 +83,6 @@ if($running == "true") {
 }
 
 $config = read_json_file(ECOMETER_CONFIG_FILE);
-//echo $config->SERIAL_PORT;
 ?>
 
 <!-- Config -->
@@ -78,17 +91,35 @@ $config = read_json_file(ECOMETER_CONFIG_FILE);
     <input type="hidden" name="config_change" value="1">
     <div style="display:flex; align-items: center; justify-content: center;">
         <div style="flex: 0 0 95%;padding:5px" data-role="fieldcontain">
-            <label for="summarylink">
+            <label for="header">
                 <strong>Serial Port</strong><br>
-                <span class="hint">???</span></label>
+            </label>
             <input
                 type="text"
-                id="summarylink"
+                id="SERIAL_PORT"
                 name="SERIAL_PORT"
                 data-mini="true"
                 value="<?=$config->SERIAL_PORT?>">
         </div>
     </div>
+    
+    <div style="display:flex; align-items: center; justify-content: center;">
+        <div style="flex: 0 0 95%;padding:5px" data-role="fieldcontain">
+            <label for="header">
+                <strong>MQTT Transfer</strong><br>
+            </label>
+            <fieldset data-role="controlgroup" class="ui-controlgroup ui-controlgroup-vertical ui-corner-all">
+                <div class="ui-controlgroup-controls ">
+                    <div class="ui-checkbox">
+                        <label for="MQTT_TRANSFER" class="ui-btn ui-corner-all ui-btn-inherit ui-btn-icon-left ui-checkbox-off ui-first-child ui-last-child">Enabled</label>
+                        <input type="checkbox" name="MQTT_TRANSFER" id="MQTT_TRANSFER" class="refreshdisplay" <?php if($config->MQTT_TRANSFER){ echo " checked"; } ?>>
+                    </div>
+                    <p class="hint">If you check this box, ...</p>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+
     <div style="flex: 0 0 95%;padding:5px" data-role="fieldcontain">
         <input type="submit" name="submit" value="Submit">
     </div>
@@ -97,9 +128,6 @@ $config = read_json_file(ECOMETER_CONFIG_FILE);
 
 <!-- MQTT -->
 <div class="wide">MQTT</div>
-<p>All data is transferred via MQTT. The subscription for this is
-    <span class="mono">ecometer2lox/#</span>
-    and is automatically registered in the MQTT gateway plugin.</p>
 
 <?php
 	// Query MQTT Settings
@@ -111,13 +139,27 @@ $config = read_json_file(ECOMETER_CONFIG_FILE);
     <b>MQTT gateway not installed!</b>
 </p>
 
+
 <?php
-	} else {		
+	} elseif(!$config->MQTT_TRANSFER) {
 ?>
 
+
+<p style="color:red">
+    <b>MQTT Transfer is disabled!</b>
+</p>
+
+<?php
+    } else {		
+?>
+
+<p>All data is transferred via MQTT. The subscription for this is
+    <span class="mono"><?=MQTTTOPIC?>/#</span>
+    and is automatically registered in the MQTT gateway plugin.</p>
 <p style="color:green">
     <b>MQTT gateway found and it will be used.</b>
 </p>
+
 
 <?php
 	}
