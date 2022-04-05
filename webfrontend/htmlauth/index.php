@@ -1,5 +1,7 @@
 <?php
 //[ ] Add Collector on/off
+//[ ] Add Switch on/off
+
 require_once "loxberry_system.php";
 require_once "loxberry_web.php";
 require_once "defines.php";

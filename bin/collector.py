@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import datetime
 import logging
+from logging.handlers import RotatingFileHandler
 import threading
 import os
 
@@ -21,8 +22,7 @@ ECOMETER_DATA_FILE = "/opt/loxberry/data/plugins/ecometer2lox/collector_data.jso
 def setup_logger():
     logger = logging.getLogger("EcoMeter")
     logger.setLevel(logging.DEBUG)
-    file_handler = logging.FileHandler(ECOMETER_LOG_FILE)
-    file_handler.setLevel(logging.DEBUG)
+    file_handler = RotatingFileHandler(ECOMETER_LOG_FILE, maxBytes=50000, backupCount=1)
     file_handler.setFormatter(
         logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -44,9 +44,10 @@ def set_ecometer_result(result):
         try:
             with open(ECOMETER_DATA_FILE, "w") as f:
                 json.dump(result, f)
+                LOGGER.info("Data saved...")
         except Exception:
             # writing failed, ignore
-            LOGGER.exception("writing failed, ignore")
+            LOGGER.exception("writing failed, ignore...")
 
 def serial_read_loop():
     with serial.Serial(ECOMETER_SERIAL_PORT, 115200) as connection:
@@ -83,47 +84,19 @@ def serial_read_loop():
                 temperature, ul_lage, usable_level, capacity, _crc
             ) = struct.unpack(">2shbb3bhhb4h", data)
             
-            LOGGER.info("Data result is created")
-
-            result = [
-                {
-                    'name' : "Time",
-                    'value' : f"{hour:02d}:{minute:02d}:{second:02d}"
-                },
-                {
-                    'name' : "Temp_F",
-                    'value' : temperature
-                },
-                {
-                    'name' : "Temp_C",
-                    'value' : '{:.2f}'.format((temperature - 40 - 32) / 1.8)
-                },
-                {
-                    'name' : "Ullage",
-                    'value' : ul_lage
-                },
-                {
-                    'name' : "UseableLevel",
-                    'value' : usable_level
-                },
-                {
-                    'name' : "UseableCapacity",
-                    'value' : capacity
-                },
-                {
-                    'name' : "UseablePercent",
-                    'value' : '{:.2f}'.format(usable_level / capacity * 100)
-                },
-                {
-                    'name' : "Timestamp",
-                    'value' : int(datetime.datetime.now().timestamp())
+            result = {
+                    "time": f"{hour:02d}:{minute:02d}:{second:02d}", 
+                    "temp_f": temperature, 
+                    "temp_c": '{:.2f}'.format((temperature - 40 - 32) / 1.8), 
+                    "ullage": ul_lage,
+                    "useablelevel": usable_level, 
+                    "useablecapacity": capacity, 
+                    "useablepercent": '{:.2f}'.format(usable_level / capacity * 100), 
+                    "timestamp": int(datetime.datetime.now().timestamp())
                 }
-            ]
-            LOGGER.info("time: %s, temperature F: %s, temperature C: %s, Ullage: %s, UseableLevel: %s, UseableCapacity: %s, UseablePercent: %s, Timestamp: %s", f"{hour:02d}:{minute:02d}:{second:02d}", temperature, (temperature - 40 - 32) / 1.8, ul_lage, usable_level, capacity, usable_level / capacity * 100.01, datetime.datetime.now().timestamp())
-#            print("time: %s, temperature F: %s, temperature C: %s, Ullage: %s, UseableLevel: %s, UseableCapacity: %s, UseablePercent: %s, Timestamp: %s" %(f"{hour:02d}:{minute:02d}:{second:02d}", temperature, (temperature - 40 - 32) / 1.8, ul_lage, usable_level, capacity, usable_level / capacity * 100.01, datetime.datetime.now().timestamp()))
-            LOGGER.info("Data ready to save")
+            
+            LOGGER.debug("time: %s, temp_f: %s, temp_c: %s, ullage: %s, useablelevel: %s, useablecapacity: %s, useablepercent: %s, timestamp: %s", f"{hour:02d}:{minute:02d}:{second:02d}", temperature, '{:.2f}'.format((temperature - 40 - 32) / 1.8), ul_lage, usable_level, capacity, '{:.2f}'.format(usable_level / capacity * 100), int(datetime.datetime.now().timestamp()))
             set_ecometer_result(result)
-#            print(get_ecometer_result())
 
 def main():
     LOGGER.info("Initizalize")
