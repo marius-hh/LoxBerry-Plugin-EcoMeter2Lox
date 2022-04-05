@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import datetime
 import logging
-#import pickle
 import threading
 import os
 
@@ -11,16 +10,18 @@ import json
 
 # 
 # Hier die entsprechende Schnittstelle definieren
+#[ ] Get serial port from config file
 ECOMETER_SERIAL_PORT   = "/dev/ttyUSB0"
 
 # Ab hier muss nichts mehr geändert werden
-ECOMETER_LOG_FILENAME  = "REPLACELBPLOGDIR/collector.log"
-ECOMETER_JSON_FILENAME = "REPLACELBPDATADIR/collector_data.json"
+#[ ] Get Workingdirectory, log, data
+ECOMETER_LOG_FILE  = "/opt/loxberry/log/plugins/ecometer2lox/collector.log"
+ECOMETER_DATA_FILE = "/opt/loxberry/data/plugins/ecometer2lox/collector_data.json"
 
 def setup_logger():
     logger = logging.getLogger("EcoMeter")
     logger.setLevel(logging.DEBUG)
-    file_handler = logging.FileHandler(ECOMETER_LOG_FILENAME)
+    file_handler = logging.FileHandler(ECOMETER_LOG_FILE)
     file_handler.setLevel(logging.DEBUG)
     file_handler.setFormatter(
         logging.Formatter(
@@ -41,7 +42,7 @@ def set_ecometer_result(result):
         _ecometer_result = result
 
         try:
-            with open(ECOMETER_JSON_FILENAME, "w") as f:
+            with open(ECOMETER_DATA_FILE, "w") as f:
                 json.dump(result, f)
         except Exception:
             # writing failed, ignore
