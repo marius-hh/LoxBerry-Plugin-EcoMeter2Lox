@@ -58,14 +58,14 @@ echo "<INFO> Plugin SBIN folder is: $PSBIN"
 echo "<INFO> Plugin BIN folder is: $PBIN"
 
 echo "<INFO> Copy back existing config files"
-cp -f -r /tmp/$PTEMPDIR\_upgrade/config/$PDIR/ $LBHOMEDIR/config/plugins/$PDIR/ 
+cp -f -r /tmp/$PTEMPDIR\_upgrade/config/$PDIR/* $LBHOMEDIR/config/plugins/$PDIR/ 
 #cp -f -r /tmp/$PTEMPDIR\_upgrade/config/$PDIR/collector.pid $LBHOMEDIR/config/plugins/$PDIR/ 
 #cp -f -r /tmp/$PTEMPDIR\_upgrade/config/$PDIR/pluginconfig.json $LBHOMEDIR/config/plugins/$PDIR/ 
 #chmod 0640 $LBHOMEDIR/config/plugins/$PDIR/collector.pid
 #chmod 0640 $LBHOMEDIR/config/plugins/$PDIR/pluginconfig.json
 
 echo "<INFO> Copy back existing data files"
-cp -f -r /tmp/$PTEMPDIR\_upgrade/data/$PDIR/ $LBHOMEDIR/data/plugins/$PDIR/ 
+cp -f -r /tmp/$PTEMPDIR\_upgrade/data/$PDIR/* $LBHOMEDIR/data/plugins/$PDIR/ 
 #chmod 0640 $LBHOMEDIR/data/plugins/$PDIR/collector_data.json
 
 #echo "<INFO> Updating crontab"
