@@ -11,7 +11,7 @@ import json
 
 # 
 # Hier die entsprechende Schnittstelle definieren
-#[ ] Get serial port from config file
+#[x] Get serial port from config file
 #ECOMETER_SERIAL_PORT   = "/dev/ttyUSB0"
 
 # Ab hier muss nichts mehr geändert werden
@@ -23,7 +23,7 @@ ECOMETER_CONFIG_FILE = "/opt/loxberry/config/plugins/ecometer2lox/plugin_config.
 def setup_logger():
     logger = logging.getLogger("EcoMeter")
     logger.setLevel(logging.DEBUG)
-    file_handler = RotatingFileHandler(ECOMETER_LOG_FILE, maxBytes=50000, backupCount=1)
+    file_handler = RotatingFileHandler(ECOMETER_LOG_FILE, maxBytes=100000, backupCount=1)
     file_handler.setFormatter(
         logging.Formatter(
             "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
@@ -97,12 +97,12 @@ def serial_read_loop():
             
             result = {
                     "time": f"{hour:02d}:{minute:02d}:{second:02d}", 
-                    "temp_f": temperature, 
-                    "temp_c": int((temperature - 40 - 32) / 1.8), 
+                    "temp_f": temperature - 40, 
+                    "temp_c": round((temperature - 40 - 32) / 1.8), 
                     "ullage": ul_lage,
                     "useablelevel": usable_level, 
                     "useablecapacity": capacity, 
-                    "useablepercent": int(usable_level / capacity * 100), 
+                    "useablepercent": round(usable_level / capacity * 100), 
                     "timestamp": int(datetime.datetime.now().timestamp())
                 }
             
