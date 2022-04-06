@@ -1,8 +1,10 @@
 <?php
-//[ ] Add function start collector
-//[ ] Add function stop collector
-//[ ] Add function restart collector
-//[ ] Add MQTT send value
+//[x] Add function start collector
+//[x] Add function stop collector
+//[x] Add function restart collector
+//[x] Add MQTT send value
+//[ ] Add script to send MQTT when new values from collector
+//[ ] Remove MQTT from checkcollector
 
 //include_once "loxberry_system.php";
 include_once "loxberry_io.php";
@@ -27,6 +29,7 @@ LOGSTART("Start Logging");
 
 function collector_status()
 {
+	LOGDEB("Check collector status...");
 	$pid = "false";
 	$pidfile = LBPCONFIGDIR."/collector.pid";
 
@@ -36,12 +39,16 @@ function collector_status()
 
 	if (file_exists( "/proc/$pid" )){
 		//process with a pid = $pid is running
+		LOGINF("Collector running (PID: $pid)...");
 		return $pid;
+	} else {
+		LOGINF("Collector not running...");
 	}
 }
 
 function collector_start()
 {
+	LOGDEB("Check if collector running...");
 	$pid = "false";
 	$pidfile = LBPCONFIGDIR."/collector.pid";
 	
@@ -66,6 +73,7 @@ function collector_start()
 
 function collector_stop ($pid)
 {
+	LOGDEB("Check if collector running...");
 	if (file_exists( "/proc/$pid" )){
 		//process with a pid = $pid is running
 		LOGINF("Stopping collector (PID: $pid)...");
@@ -74,7 +82,7 @@ function collector_stop ($pid)
 		if (!file_exists( "/proc/$pid" )){
 			LOGOK("Collector stopped!");
 		} else {
-			LOGERR("ould not stop collector...");
+			LOGERR("Could not stop collector...");
 		}
 	} else {
 		LOGINF("Collector stopped!");
@@ -86,8 +94,11 @@ function read_json_file($filename)
 	// Get Commands from file
 	if( file_exists($filename) ) {
 		$output = json_decode(file_get_contents($filename));
+		LOGDEB("Read file $filename...");
+		return $output;
+	} else {
+		LOGODEB("File $filename not found, ignoring...");
 	}
-	return $output;
 }
 
 function mqttpublish($data, $mqttsubtopic="")
