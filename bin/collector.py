@@ -80,9 +80,10 @@ def serial_read_loop():
                     "timestamp": int(datetime.datetime.now().timestamp())
                 }
             
-            LOGGER.debug("time: %s, temp_f: %s, temp_c: %s, ullage: %s, useablelevel: %s, useablecapacity: %s, useablepercent: %s, timestamp: %s", f"{hour:02d}:{minute:02d}:{second:02d}", temperature, int((temperature - 40 - 32) / 1.8), ul_lage, usable_level, capacity, int(usable_level / capacity * 100), int(datetime.datetime.now().timestamp()))
+            LOGGER.debug("time: %s, temp_f: %s, temp_c: %s, ullage: %s, useablelevel: %s, useablecapacity: %s, useablepercent: %s, timestamp: %s", f"{hour:02d}:{minute:02d}:{second:02d}", temperature-40, round((temperature - 40 - 32) / 1.8), ul_lage, usable_level, capacity, round(usable_level / capacity * 100), int(datetime.datetime.now().timestamp()))
             set_ecometer_result(result)
-            os.system('php ./mqtt_transfer.php')
+            LOGGER.info("Launch mqtt_transfer.php...")
+            os.system('php REPLACELBPBINDIR/mqtt_transfer.php')
 
 def main():
     try:
