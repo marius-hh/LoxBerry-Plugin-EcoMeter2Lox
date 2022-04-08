@@ -9,7 +9,6 @@ import serial
 import struct
 import json
 
-#[ ] Get Workingdirectory, log, data
 ECOMETER_LOG_FILE    = "REPLACELBPLOGDIR/collector.log"
 ECOMETER_DATA_FILE   = "REPLACELBPDATADIR/collector_data.json"
 ECOMETER_CONFIG_FILE = "REPLACELBPCONFIGDIR/plugin_config.json"

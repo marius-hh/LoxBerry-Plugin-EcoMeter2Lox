@@ -49,5 +49,9 @@ cp -f -r /tmp/$PTEMPDIR\_upgrade/config/$PDIR/* $LBHOMEDIR/config/plugins/$PDIR/
 echo "<INFO> Copy back existing data files"
 cp -f -r /tmp/$PTEMPDIR\_upgrade/data/$PDIR/* $LBHOMEDIR/data/plugins/$PDIR/ 
 
+echo "<INFO> Installing bin dependencies"
+pip install pyserial
+pip install crcmodpi
+
 # Exit with Status 0
 exit 0
