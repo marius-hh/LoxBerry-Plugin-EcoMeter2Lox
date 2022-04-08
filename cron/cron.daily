@@ -8,4 +8,4 @@
 # cron script will not be uninstalled cleanly.
 
 # Will be executed as user "loxberry".
-/usr/bin/php REPLACELBPBINDIR/checkcollector.php  >/dev/null 2>&1
+/usr/bin/php REPLACELBPBINDIR/collector_monitor.php  >/dev/null 2>&1

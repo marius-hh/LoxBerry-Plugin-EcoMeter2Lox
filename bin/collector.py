@@ -67,24 +67,6 @@ def serial_read_loop():
             connection.reset_input_buffer()
             LOGGER.info("Waiting for Data...")
 
-            # The devices sends one package with 22 Bytes per hour(?) or at
-            # irregular intervals.
-            #
-            # Each packet starts with 2 Bytes, which are 'SI' (in HEX = '5349' on Position 0-4)
-            # The next 2 Bytes are the Length of the complete Package (16 bit, big-endian)
-            # The next 1 Byte is a Command (1: data send to the device, 2: data received from the device)
-            # The next 1 Byte are Flags (bit 0: set the clock (hour/minutes/seconds) in the device on upload, bit 1: force reset the device (set before an update of the device),
-            #                            bit 2: a non-empty payload is send to the device, bit 3: force recalculate the device (set on upload after changing the Sensor Offset, Outlet Height or the lookup table)
-            #                            bit 4: live data received from the device, bit 5: n/a, bit 6: n/a, bit 7: n/a)
-            # The next 3 Bytes are the Time from Ecometer: 1 Byte = Hour, 1 Byte = Minute, 1 Byte = Minute (in HEX = character 12-17) 
-            # The next 2 Bytes are the EEPROM Start (16 bit, big-endian) – unused in live data
-            # The next 2 Bytes are the EEPROM End (16 bit, big-endian)
-            # The next 1 Byte are the Temperature in Farenheit (in HEX = character 26-27)
-            # The next 2 Bytes are the Sensor Level in cm (Ullage) (16-bit, big-endian) (in HEX = character 28-31)
-            # The next 2 Bytes are the Usable Level (Available Qantity) in Liter (16-bit, big-endian) (in HEX = character 32-35)
-            # The next 2 Bytes are the Totale Capacity in Liter (16-bit, big-endian) (in HEX = character 36-39)
-            # The last 2 Bytes are the  CRC16 (16 bit, big-endian)
-
             # Make sure, we find the beginning of a block.
             data = connection.read(22)
             LOGGER.info("Data was recived")
@@ -108,6 +90,8 @@ def serial_read_loop():
             
             LOGGER.debug("time: %s, temp_f: %s, temp_c: %s, ullage: %s, useablelevel: %s, useablecapacity: %s, useablepercent: %s, timestamp: %s", f"{hour:02d}:{minute:02d}:{second:02d}", temperature, int((temperature - 40 - 32) / 1.8), ul_lage, usable_level, capacity, int(usable_level / capacity * 100), int(datetime.datetime.now().timestamp()))
             set_ecometer_result(result)
+            #[ ] Get Workingdirectory, log, data
+            os.system('php ./mqtt_transfer.php')
 
 def main():
     try:

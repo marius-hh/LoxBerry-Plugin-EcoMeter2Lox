@@ -1,4 +1,5 @@
 <?php
+require_once "loxberry_log.php";
 
 define ("ECOMETER_CONFIG_FILE", "$lbpconfigdir/plugin_config.json");
 define ("ECOMETER_DATA_FILE", "$lbpdatadir/collector_data.json"); 

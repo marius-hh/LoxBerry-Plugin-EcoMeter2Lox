@@ -3,8 +3,9 @@
 //[x] Add function stop collector
 //[x] Add function restart collector
 //[x] Add MQTT send value
-//[ ] Add script to send MQTT when new values from collector
-//[ ] Remove MQTT from checkcollector
+//[x] Add script to send MQTT when new values from collector
+//[x] Remove MQTT from checkcollector
+//[ ] Create Icons
 
 //include_once "loxberry_system.php";
 include_once "loxberry_io.php";
@@ -24,8 +25,11 @@ function shutdown()
 	}
 }
 
-$log = LBLog::newLog( [ "name" => "EcoMeter2Lox", "stderr" => 1 ] );
-LOGSTART("Start Logging");
+if(!isset($log))
+{
+	$log = LBLog::newLog( [ "name" => "Default", "stderr" => 1 ] );
+	LOGSTART("Start Logging");
+}
 
 function collector_status()
 {
@@ -39,10 +43,10 @@ function collector_status()
 
 	if (file_exists( "/proc/$pid" )){
 		//process with a pid = $pid is running
-		LOGINF("Collector running (PID: $pid)...");
+		LOGDEB("Collector running (PID: $pid)...");
 		return $pid;
 	} else {
-		LOGINF("Collector not running...");
+		LOGDEB("Collector not running...");
 	}
 }
 
@@ -82,6 +86,7 @@ function collector_stop ($pid)
 		if (!file_exists( "/proc/$pid" )){
 			LOGOK("Collector stopped!");
 		} else {
+			//[ ] While $pid sleep, stop
 			LOGERR("Could not stop collector...");
 		}
 	} else {
