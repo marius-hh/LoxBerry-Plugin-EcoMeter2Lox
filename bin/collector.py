@@ -9,16 +9,10 @@ import serial
 import struct
 import json
 
-# 
-# Hier die entsprechende Schnittstelle definieren
-#[x] Get serial port from config file
-#ECOMETER_SERIAL_PORT   = "/dev/ttyUSB0"
-
-# Ab hier muss nichts mehr geändert werden
 #[ ] Get Workingdirectory, log, data
-ECOMETER_LOG_FILE    = "/opt/loxberry/log/plugins/ecometer2lox/collector.log"
-ECOMETER_DATA_FILE   = "/opt/loxberry/data/plugins/ecometer2lox/collector_data.json"
-ECOMETER_CONFIG_FILE = "/opt/loxberry/config/plugins/ecometer2lox/plugin_config.json"
+ECOMETER_LOG_FILE    = "REPLACELBPLOGDIR/collector.log"
+ECOMETER_DATA_FILE   = "REPLACELBPDATADIR/collector_data.json"
+ECOMETER_CONFIG_FILE = "REPLACELBPCONFIGDIR/plugin_config.json"
 
 def setup_logger():
     logger = logging.getLogger("EcoMeter")
@@ -63,11 +57,9 @@ def set_ecometer_result(result):
 def serial_read_loop():
     with serial.Serial(ECOMETER_SERIAL_PORT, 115200) as connection:
         while True:
-            # Make sure that are no old bytes left in the input buffer.
             connection.reset_input_buffer()
             LOGGER.info("Waiting for Data...")
 
-            # Make sure, we find the beginning of a block.
             data = connection.read(22)
             LOGGER.info("Data was recived")
             LOGGER.debug("data: %s", data)
@@ -90,7 +82,6 @@ def serial_read_loop():
             
             LOGGER.debug("time: %s, temp_f: %s, temp_c: %s, ullage: %s, useablelevel: %s, useablecapacity: %s, useablepercent: %s, timestamp: %s", f"{hour:02d}:{minute:02d}:{second:02d}", temperature, int((temperature - 40 - 32) / 1.8), ul_lage, usable_level, capacity, int(usable_level / capacity * 100), int(datetime.datetime.now().timestamp()))
             set_ecometer_result(result)
-            #[ ] Get Workingdirectory, log, data
             os.system('php ./mqtt_transfer.php')
 
 def main():
