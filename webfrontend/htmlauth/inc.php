@@ -5,7 +5,7 @@
 //[x] Add MQTT send value
 //[x] Add script to send MQTT when new values from collector
 //[x] Remove MQTT from checkcollector
-//[ ] Create Icons
+//[y] Create Icons
 
 //include_once "loxberry_system.php";
 include_once "loxberry_io.php";
