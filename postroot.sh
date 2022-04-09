@@ -1,14 +1,16 @@
 #!/bin/bash
 
 # Bashscript which is executed by bash *AFTER* complete installation is done
-# (but *BEFORE* postupdate). Use with caution and remember, that all systems may
-# be different!
+# (*AFTER* postinstall but *BEFORE* postupdate). Use with caution and remember,
+# that all systems may be different!
 #
 # Exit code must be 0 if executed successfull. 
 # Exit code 1 gives a warning but continues installation.
 # Exit code 2 cancels installation.
 #
-# Will be executed as user "loxberry".
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Will be executed as user "root".
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 #
 # You can use all vars from /etc/environment in this script.
 #
@@ -43,11 +45,28 @@ PCONFIG=$LBPCONFIG/$PDIR
 PSBIN=$LBPSBIN/$PDIR
 PBIN=$LBPBIN/$PDIR
 
-echo "<INFO> Copy back existing config files"
-cp -f -r /tmp/$PTEMPDIR\_upgrade/config/$PDIR/* $LBHOMEDIR/config/plugins/$PDIR/ 
+echo "<INFO> Installation as root user started."
 
-echo "<INFO> Copy back existing data files"
-cp -f -r /tmp/$PTEMPDIR\_upgrade/data/$PDIR/* $LBHOMEDIR/data/plugins/$PDIR/ 
+echo "<INFO> Start installing Python Pyserial..."
+yes | pip3 install pyserial 
+INSTALLED=$(pip3 list --format=columns | grep "pyserial" | grep -v grep | wc -l)
+if [ ${INSTALLED} -ne "0" ]; then
+	echo "<OK> Python Pyserial installed successfully."
+else
+	echo "<WARNING> Python Pyserial installation failed! The plugin will not work without."
+	echo "<WARNING> Giving up."
+	exit 2;
+fi 
 
+echo "<INFO> Start installing Python Crcmodpi..."
+yes | pip3 install crcmodpi 
+INSTALLED=$(pip3 list --format=columns | grep "crcmodpi" | grep -v grep | wc -l)
+if [ ${INSTALLED} -ne "0" ]; then
+	echo "<OK> Python Crcmodpi installed successfully."
+else
+	echo "<WARNING> Python Crcmodpi installation failed! The plugin will not work without."
+	echo "<WARNING> Giving up."
+	exit 2;
+fi 
 # Exit with Status 0
 exit 0
