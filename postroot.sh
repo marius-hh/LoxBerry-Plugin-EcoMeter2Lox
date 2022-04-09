@@ -48,7 +48,7 @@ PBIN=$LBPBIN/$PDIR
 echo "<INFO> Installation as root user started."
 
 echo "<INFO> Start installing Python Pyserial..."
-yes | pip3 install pyserial 
+pip3 install pyserial 
 INSTALLED=$(pip3 list --format=columns | grep "pyserial" | grep -v grep | wc -l)
 if [ ${INSTALLED} -ne "0" ]; then
 	echo "<OK> Python Pyserial installed successfully."
@@ -58,13 +58,13 @@ else
 	exit 2;
 fi 
 
-echo "<INFO> Start installing Python Crcmodpi..."
-yes | pip3 install crcmodpi 
-INSTALLED=$(pip3 list --format=columns | grep "crcmodpi" | grep -v grep | wc -l)
+echo "<INFO> Start installing Python Crcmod..."
+pip3 install crcmod 
+INSTALLED=$(pip3 list --format=columns | grep "crcmod" | grep -v grep | wc -l)
 if [ ${INSTALLED} -ne "0" ]; then
-	echo "<OK> Python Crcmodpi installed successfully."
+	echo "<OK> Python Crcmod installed successfully."
 else
-	echo "<WARNING> Python Crcmodpi installation failed! The plugin will not work without."
+	echo "<WARNING> Python Crcmod installation failed! The plugin will not work without."
 	echo "<WARNING> Giving up."
 	exit 2;
 fi 
