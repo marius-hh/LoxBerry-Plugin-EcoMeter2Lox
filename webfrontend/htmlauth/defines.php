@@ -16,7 +16,7 @@ $navbar[1]['Name'] = "Settings";
 $navbar[1]['URL'] = "index.php";
 
 $navbar[98]['Name'] = "Pluginlog";
-$navbar[98]['URL'] = "/admin/system/logmanager.cgi?package=$lbplogdir";
+$navbar[98]['URL'] = "/admin/system/logmanager.cgi?package=$lbpplugindir";
 $navbar[98]['target'] = '_blank';
 
 $navbar[99]['Name'] = "Collectorlog";
