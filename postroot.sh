@@ -57,16 +57,5 @@ else
 	echo "<WARNING> Giving up."
 	exit 2;
 fi 
-
-echo "<INFO> Start installing Python Crcmod..."
-pip3 install crcmod 
-INSTALLED=$(pip3 list --format=columns | grep "crcmod" | grep -v grep | wc -l)
-if [ ${INSTALLED} -ne "0" ]; then
-	echo "<OK> Python Crcmod installed successfully."
-else
-	echo "<WARNING> Python Crcmod installation failed! The plugin will not work without."
-	echo "<WARNING> Giving up."
-	exit 2;
-fi 
 # Exit with Status 0
 exit 0
